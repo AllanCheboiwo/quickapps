@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # Database service (PostgreSQL)
+  db:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: youruser
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: yourdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+
+  # Backend service for user CRUD
+  backend_user:
+    build: 
+      context: ./backend/user_service
+      dockerfile: Dockerfile
+    image: user_service
+    container_name: user_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/user_service:/app
+    environment:
+      - DATABASE_URL: "postgres://youruser:yourpassword@db:5432/yourdb"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Backend service for LLM tailoring
+  backend_llm:
+    build: 
+      context: ./backend/llm_service
+      dockerfile: Dockerfile
+    image: llm_service
+    container_name: llm_service
+    env_file: .env
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend/llm_service:/app
+    environment:
+      - DATABASE_URL=postgres://youruser:yourpassword@db:5432/yourdb
+      - LLM_API_KEY=your_llm_api_key
+    depends_on:
+      db:
+        condition: service_healthy
+  # Frontend service (React)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend_user
+      - backend_llm
+    environment:
+      - CHOKIDAR_USEPOLLING="true
+# Shared Test Database for both test backends
+  test_db:
+    image: postgres
+    container_name: test_postgres
+    environment:
+      POSTGRES_USER: youruser
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: yourdb_test
+    ports:
+      - "5433:5432"  # Avoids conflict with a main db on 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U youruser"]
+      interval: 10s
+      retries: 5
+
+  # Test Backend for User CRUD Service
+  test_backend_user:
+    build:
+      context: ./backend/user_service
+      dockerfile: Dockerfile
+    image: test_user_service
+    container_name: test_user_service
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./backend/user_service:/app
+    environment:
+      - DATABASE_URL=postgres://youruser:yourpassword@test_db:5432/yourdb_test
+    depends_on:
+      test_db:
+        condition: service_healthy
+
+  # Test Backend for LLM Tailoring Service
+  test_backend_llm:
+    build:
+      context: ./backend/llm_service
+      dockerfile: Dockerfile
+    image: test_llm_service
+    container_name: test_llm_service
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./backend/llm_service:/app
+    environment:
+      - DATABASE_URL=postgres://youruser:yourpassword@test_db:5432/yourdb_test
+      - LLM_API_KEY=your_llm_api_key
+    depends_on:
+      test_db:
+        condition: service_healthy
+
+# Define volumes for persistent data
+volumes:
+  pgdata:
