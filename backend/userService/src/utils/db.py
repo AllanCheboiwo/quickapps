@@ -27,11 +27,6 @@ engine = create_engine(DATABASE_URL,echo = True)
 #create ORM session for engine
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-#create base class
-Base = declarative_base()
-
-#Dependency to get DB session
-
 def get_db() -> Generator:
     db = SessionLocal()
     try:
