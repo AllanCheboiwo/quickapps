@@ -73,23 +73,25 @@ services:
 #     depends_on:
 #       db:
 #         condition: service_healthy
-#   # Frontend service (React)
-#   frontend:
-#     build: 
-#       context: ./frontend
-#       dockerfile: Dockerfile
-#     image: frontend
-#     container_name: frontend
-#     ports:
-#       - "3000:3000"
-#     volumes:
-#       - ./frontend:/app
-#       - /app/node_modules
-#     depends_on:
-#       - backend_user
-#       - backend_llm
-#     environment:
-#       - CHOKIDAR_USEPOLLING="true
+  # Frontend service (React)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend_user
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
+
 # # Shared Test Database for both test backends
 #   test_db:
 #     image: postgres

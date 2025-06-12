@@ -17,8 +17,8 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate = func.now(),nullable=False)
 
-    # #relationship
-    # profiles: Mapped[List["Profile"]] = relationship(back_populates="users")
+    #relationships
+    profiles: Mapped[List["Profile"]] = relationship(back_populates="user")
 
     def __repr__(self) -> str:
         return f"<User id={self.id}, email='{self.email}'>"

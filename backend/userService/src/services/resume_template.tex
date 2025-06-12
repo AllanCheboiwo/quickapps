@@ -1,0 +1,181 @@
+%-------------------------
+% Generic Resume Template in LaTeX
+% Adapted from Aras Gungore's template by Grok 3 (xAI)
+% License: MIT
+%------------------------
+
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{hyphenat}
+\usepackage{fontawesome}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generated pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[1]{
+    \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+% Modified commands for projects to remove space between bullet points
+\newcommand{\resumeItemNoSpace}[1]{
+  \item\small{
+    {#1}
+  }
+}
+
+\newcommand{\resumeItemListStartNoSpace}{\begin{itemize}[noitemsep,topsep=0pt]}
+\newcommand{\resumeItemListEndNoSpace}{\end{itemize}\vspace{-5pt}}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%---------- HEADING ----------
+{\raggedright
+    \begin{center}
+        \textbf{\large \scshape [User Name]} \\[0.5em] % Placeholder for User Name
+        
+        \small 
+        % Placeholders for contact info - these will be filled from profile or a default
+        \faAt \hspace{.5pt} \href{mailto:[User Email]}{[User Email]} $|$
+        \faLinkedinSquare \hspace{.5pt} \href{[User LinkedIn URL]}{[User LinkedIn Profile]} $|$
+        \faGithub \hspace{.5pt} \href{[User GitHub URL]}{[User GitHub Profile]} $|$
+        \faMapMarker \hspace{.5pt} {[User City, State/Province, Country]} $|$
+        \faPhone \hspace{.5pt} {[User Phone Number]}
+    \end{center}
+}
+
+%----------- PROFILE -----------
+\section{Profile}
+\begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+        % Placeholder for LLM-generated profile summary
+        [LLM_GENERATED_PROFILE_SUMMARY]
+    }}
+\end{itemize}
+
+%----------- EDUCATION -----------
+\section{Education}
+\vspace{3pt}
+\resumeSubHeadingListStart
+    % Placeholder for Education items - loop through profile.education
+    % Example for one entry:
+    % \resumeSubheading
+    %   {[University Name]}{[City, State/Province]}
+    %   {[Degree Type, e.g., Bachelor of Science in Computer Science], GPA: [Your GPA]}{[Start Month Year] -- [End Month Year]}
+    %   \resumeItemListStart
+    %       \resumeItem{Relevant Coursework: [List Relevant Courses]}
+    %       \resumeItem{Awards: [List Awards or Scholarships, if any]}
+    %   \resumeItemListEnd
+    [EDUCATION_SECTION_CONTENT]
+\resumeSubHeadingListEnd
+
+%----------- EXPERIENCE -----------
+\section{Experience}
+\vspace{3pt}
+\resumeSubHeadingListStart
+    % Placeholder for Experience items - loop through profile.experience
+    % Example for one entry:
+    % \resumeSubheading
+    %   {[Company Name]}{[City, State/Province]}
+    %   {[Job Title]}{[Start Month Year] -- [End Month Year]}
+    %   \resumeItemListStart
+    %       \resumeItem{[Describe key responsibility or achievement using relevant tools/technologies.]}
+    %       \resumeItem{[Describe another key responsibility or achievement.]}
+    %       \resumeItem{[Highlight collaboration, impact, or specific skills used.]}
+    %   \resumeItemListEnd
+    [EXPERIENCE_SECTION_CONTENT]
+\resumeSubHeadingListEnd
+
+%----------- PROJECTS -----------
+\section{Projects}
+\vspace{3pt}
+\resumeSubHeadingListStart
+    % Placeholder for Project items - loop through profile.projects
+    % Example for one entry:
+    % \resumeProjectHeading
+    %   {\textbf{[Project Name]}}
+    %   \resumeItemListStartNoSpace
+    %       \resumeItemNoSpace{[Describe project, technologies used, and key features.]}
+    %       \resumeItemNoSpace{[Highlight deployment, impact, or specific achievement.]}
+    %   \resumeItemListEndNoSpace
+    [PROJECTS_SECTION_CONTENT]
+\resumeSubHeadingListEnd
+
+%----------- SKILLS -----------
+\section{Skills}
+\begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+        % Placeholder for LLM-generated skills section or formatted skills from profile
+        [SKILLS_SECTION_CONTENT]
+    }}
+\end{itemize}
+
+%-------------------------------------------
+\end{document} 

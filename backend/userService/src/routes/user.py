@@ -1,10 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Annotated
 
 from src.utils import db # Database utilities (get_db)
 from src.models import users as user_model # SQLAlchemy model
 from src.schemas import users as user_schema # Pydantic schemas
+from src.routes.auth import get_current_user
+from src.models.users import User
+
+# Reusable dependency annotations
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(
     prefix="/users",
@@ -12,16 +17,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/", response_model=List[user_schema.UserOut])
-def read_users(skip: int = 0, limit: int = 100, db_session: Session = Depends(db.get_db)):
-    """Get all users (admin endpoint)"""
-    users = db_session.query(user_model.User).offset(skip).limit(limit).all()
-    return users
-
-@router.get("/{user_id}", response_model=user_schema.UserOut)
-def read_user(user_id: int, db_session: Session = Depends(db.get_db)):
-    """Get user by ID (admin endpoint)"""
-    db_user = db_session.query(user_model.User).filter(user_model.User.id == user_id).first()
-    if db_user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return db_user
+@router.get("/me", response_model=user_schema.UserOut)
+def read_current_user(current_user: CurrentUser):
+    """Get the current authenticated user's profile"""
+    return current_user

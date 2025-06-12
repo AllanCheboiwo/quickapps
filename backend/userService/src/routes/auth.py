@@ -12,6 +12,9 @@ from src.utils.db import get_db
 from src.models.users import User 
 from src.utils.security import verifyPassword, createAccessToken, hashedPassword, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
+# Reusable dependency annotations
+DbSession = Annotated[Session, Depends(get_db)]
+OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 class Token(BaseModel):
     access_token: str
@@ -59,7 +62,7 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     return user
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DbSession):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -79,7 +82,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
     return user
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(user: UserCreate, db: DbSession):
     """Register a new user"""
     # Check if email already exists
     db_user_by_email = db.query(User).filter(User.email == user.email).first()
@@ -107,8 +110,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/token")
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db_session: Session = Depends(get_db)
+    form_data: OAuth2Form,
+    db_session: DbSession
 ) -> Token:
     """Login and get access token"""
     user = authenticate_user(db_session, form_data.username, form_data.password)

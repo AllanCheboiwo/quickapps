@@ -10,6 +10,11 @@ __pycache__/
 
 # Ignore Node.js-related folders
 node_modules/
+/frontend/.next/
+/frontend/out/
+/frontend/build/
+/frontend/package-lock.json
+/frontend/tsconfig.json.tsbuildinfo
 
 # Ignore virtual environments
 venv/
