@@ -4,27 +4,30 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-
 RUN npm install && npm cache clean --force
-
 
 COPY . .
 
+# Build Next.js app
 RUN npm run build
+
+# Create public folder if it doesn't exist
+RUN mkdir -p /app/public
 
 
 FROM node:18-alpine as runtime
 
 WORKDIR /app
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/package.json ./package.json
+ENV NODE_ENV=production
 
-
+# Copy package files
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps --only=production && npm cache clean --force
 
+# Copy built Next.js app from builder
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
 
 RUN addgroup -g 1001 appuser && adduser -D -u 1001 -G appuser appuser
 USER appuser
