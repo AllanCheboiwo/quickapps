@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 import os
 from typing import Optional
 
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     max_tokens: int = Field(default=800, env="MAX_TOKENS") 
     temperature: float = Field(default=0.7, env="TEMPERATURE")
 
-    cors_origins: list = Field(default=["http://localhost:3000", "http://127.0.0.1:3000"], env="CORS_ORIGINS")
+    cors_origins: str = Field(default="http://localhost:3000,http://127.0.0.1:3000", env="CORS_ORIGINS")
 
     sqlalchemy_echo: bool = Field(default=False, env="SQLALCHEMY_ECHO")
     sqlalchemy_pool_size: int = Field(default=20, env="SQLALCHEMY_POOL_SIZE")
@@ -35,19 +35,27 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-    @validator("debug", pre=True)
+    @property
+    def get_cors_origins_list(self) -> list:
+        """Parse cors_origins string into list"""
+        return [origin.strip() for origin in self.cors_origins.split(",")]
+
+    @field_validator("debug", mode="before")
+    @classmethod
     def parse_debug(cls, v):
         if isinstance(v, str):
             return v.lower() in ("true", "1", "yes")
         return bool(v)
 
-    @validator("sqlalchemy_echo", pre=True)
+    @field_validator("sqlalchemy_echo", mode="before")
+    @classmethod
     def parse_echo(cls, v):
         if isinstance(v, str):
             return v.lower() in ("true", "1", "yes")
         return bool(v)
 
-    @validator("access_token_expire_minutes")
+    @field_validator("access_token_expire_minutes")
+    @classmethod
     def validate_token_expire(cls, v):
         if v < 1:
             raise ValueError("access_token_expire_minutes must be at least 1")
@@ -55,16 +63,11 @@ class Settings(BaseSettings):
             raise ValueError("access_token_expire_minutes cannot exceed 1 year")
         return v
 
-    @validator("temperature")
+    @field_validator("temperature")
+    @classmethod
     def validate_temperature(cls, v):
         if not 0 <= v <= 2:
             raise ValueError("temperature must be between 0 and 2")
-        return v
-
-    @validator("cors_origins", pre=True)
-    def parse_cors_origins(cls, v):
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
         return v
 
     class Config:
