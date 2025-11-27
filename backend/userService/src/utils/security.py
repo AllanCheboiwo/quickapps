@@ -1,34 +1,38 @@
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-from fastapi import HTTPException
 import jwt
 from jwt.exceptions import InvalidTokenError
-import os
-from dotenv import load_dotenv
+from src.core.config import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM=os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
-pwdContext = CryptContext(schemes=["bcrypt"],deprecated="auto") 
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
-def verifyPassword(plainPassword:str,hashedPassword:str)->bool:
-    return pwdContext.verify(plainPassword,hashedPassword)
 
-def hashedPassword(password:str)->str:
-    return pwdContext.hash(password)
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
 
-def createAccessToken(data:dict,expiresDelta: timedelta | None = None):
-    toEncode = data.copy()
-    if expiresDelta:
-        expire = datetime.now(timezone.utc) + expiresDelta
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    
-    toEncode.update({"exp":expire})
-    encodedJwt = jwt.encode(toEncode,SECRET_KEY,algorithm = ALGORITHM)
-    return encodedJwt
+
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    return encoded_jwt
+
+
+def decode_token(token: str) -> dict | None:
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        return payload
+    except InvalidTokenError:
+        return None
 
 
 

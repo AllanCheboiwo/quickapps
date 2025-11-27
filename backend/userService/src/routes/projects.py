@@ -9,7 +9,6 @@ from src.routes.auth import get_current_user
 from src.models.users import User
 from src.utils.auth_helpers import verify_profile_ownership
 
-# Reusable dependency annotations
 DbSession = Annotated[Session, Depends(db.get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
@@ -26,7 +25,7 @@ async def create_project_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create a new project for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     project_data = project_in.dict()
@@ -45,7 +44,7 @@ async def read_projects_for_profile(
     skip: int = 0, 
     limit: int = 100
 ):
-    """Get all projects for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     projects = db_session.query(project_model.Project).filter(
@@ -60,7 +59,7 @@ async def read_project_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Get a specific project by ID, for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_project = db_session.query(project_model.Project).filter(
@@ -79,7 +78,7 @@ async def update_project_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Update a project for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_project = db_session.query(project_model.Project).filter(
@@ -105,7 +104,7 @@ async def delete_project_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Delete a project for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_project = db_session.query(project_model.Project).filter(
@@ -127,7 +126,7 @@ async def create_bulk_projects_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create multiple projects at once for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_projects = []

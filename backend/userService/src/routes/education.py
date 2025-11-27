@@ -9,24 +9,22 @@ from src.routes.auth import get_current_user
 from src.models.users import User
 from src.utils.auth_helpers import verify_profile_ownership
 
-# Reusable dependency annotations
 DbSession = Annotated[Session, Depends(db.get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(
-    # prefix="/education", # Prefix is now handled in main.py
     tags=["Profile Education"],
     responses={404: {"description": "Not found"}},
 )
 
 @router.post("", response_model=education_schema.EducationOut, status_code=status.HTTP_201_CREATED)
 async def create_education_for_profile(
-    profile_id: int, # Comes from path
+    profile_id: int, 
     education_in: education_schema.EducationCreateRequest, 
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create a new education record for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     education_data = education_in.dict()
@@ -39,13 +37,13 @@ async def create_education_for_profile(
 
 @router.get("", response_model=List[education_schema.EducationOut])
 async def read_educations_for_profile(
-    profile_id: int, # Comes from path
+    profile_id: int, 
     db_session: DbSession,
     current_user: CurrentUser,
     skip: int = 0, 
     limit: int = 100
 ):
-    """Get all education records for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     educations = db_session.query(education_model.Education).filter(
@@ -55,12 +53,12 @@ async def read_educations_for_profile(
 
 @router.get("/{education_id}", response_model=education_schema.EducationOut)
 async def read_education_for_profile(
-    profile_id: int, # Comes from path
+    profile_id: int, 
     education_id: int, 
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Get a specific education record by ID, for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_education = db_session.query(education_model.Education).filter(
@@ -73,13 +71,13 @@ async def read_education_for_profile(
 
 @router.put("/{education_id}", response_model=education_schema.EducationOut)
 async def update_education_for_profile(
-    profile_id: int, # Comes from path
+    profile_id: int, 
     education_id: int, 
     education_update: education_schema.EducationUpdate, 
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Update an education record for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_education = db_session.query(education_model.Education).filter(
@@ -100,12 +98,12 @@ async def update_education_for_profile(
 
 @router.delete("/{education_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_education_for_profile(
-    profile_id: int, # Comes from path
+    profile_id: int, 
     education_id: int, 
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Delete an education record for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_education = db_session.query(education_model.Education).filter(
@@ -122,12 +120,12 @@ async def delete_education_for_profile(
 
 @router.post("/bulk", response_model=List[education_schema.EducationOut], status_code=status.HTTP_201_CREATED)
 async def create_bulk_educations_for_profile(
-    profile_id: int, # Comes from path
+    profile_id: int, 
     educations_in: List[education_schema.EducationCreateRequest], 
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create multiple education records at once for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_educations = []

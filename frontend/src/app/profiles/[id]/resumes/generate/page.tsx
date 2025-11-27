@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useRequireAuth } from '@/hooks/use-auth'
 import { resumeApi, profileApi } from '@/lib/api' // Assuming resumeApi is set up
 import type { ResumeGenerateRequest, GeneratedResume } from '@/types' 
-import { ArrowLeft, Loader2, Rocket, Download, FileText, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Loader2, Rocket, Download, FileText, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react'
 
 const generateResumeSchema = z.object({
   job_description: z.string().min(50, 'Job description should be at least 50 characters'),
@@ -29,6 +29,31 @@ export default function GenerateResumePage() {
 
   const [apiError, setApiError] = useState<string | null>(null);
   const [generatedResumeData, setGeneratedResumeData] = useState<GeneratedResume | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLatex = async () => {
+    if (generatedResumeData?.latex_content) {
+      try {
+        await navigator.clipboard.writeText(generatedResumeData.latex_content);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    }
+  };
+
+  const handleDownloadTex = () => {
+    if (generatedResumeData?.latex_content) {
+      const element = document.createElement('a');
+      const file = new Blob([generatedResumeData.latex_content], { type: 'text/plain' });
+      element.href = URL.createObjectURL(file);
+      element.download = `resume_${generatedResumeData.id}.tex`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  };
 
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', profileId],
@@ -152,43 +177,107 @@ export default function GenerateResumePage() {
 
             {generateResumeMutation.isSuccess && generatedResumeData && (
               <div className="mt-8 pt-6 border-t">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-green-600" />
-                  Resume Generated Successfully!
-                </h3>
-                
-                {generatedResumeData.pdf_file_path ? (
-                  <>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Your tailored resume has been created. You can now download it as a PDF.
-                    </p>
-                    <a 
-                      href={`/api/resumes/${generatedResumeData.id}/pdf`} // Using /api prefix for Next.js proxy
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download // Suggests download, browser might still open in new tab depending on settings
-                    >
-                      <Button variant="default" className="w-full md:w-auto">
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="text-lg font-semibold text-green-800 mb-2 flex items-center">
+                    <Check className="h-5 w-5 mr-2" />
+                    Resume Generated Successfully!
+                  </h3>
+                  <p className="text-sm text-green-700">
+                    Your AI-tailored resume LaTeX has been created. Choose one of the options below to compile it into a PDF.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Overleaf Option */}
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Use Overleaf (Easiest)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ol className="text-sm space-y-2 text-gray-700">
+                        <li><span className="font-semibold">1.</span> Click "Copy LaTeX" button below</li>
+                        <li><span className="font-semibold">2.</span> Go to <a href="https://www.overleaf.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Overleaf.com</a></li>
+                        <li><span className="font-semibold">3.</span> Create a new blank project</li>
+                        <li><span className="font-semibold">4.</span> Paste the LaTeX code</li>
+                        <li><span className="font-semibold">5.</span> Download as PDF</li>
+                      </ol>
+                      <p className="text-xs text-gray-600 italic">Free account required (no credit card)</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Local Option */}
+                  <Card className="bg-purple-50 border-purple-200">
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center">
                         <Download className="h-4 w-4 mr-2" />
-                        Download PDF Resume
-                      </Button>
-                    </a>
-                  </>
-                ) : (
-                  <div className="p-3 bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-md flex items-start">
-                    <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 text-yellow-500" />
-                    <p className="flex-grow">
-                      PDF generation for this resume failed or is still processing. 
-                      The LaTeX content has been saved and can be compiled manually.
-                    </p>
-                  </div>
-                )}
+                        Download & Compile Locally
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ol className="text-sm space-y-2 text-gray-700">
+                        <li><span className="font-semibold">1.</span> Click "Download .tex" below</li>
+                        <li><span className="font-semibold">2.</span> Install LaTeX locally (MiKTeX, TeX Live)</li>
+                        <li><span className="font-semibold">3.</span> Use editor (TeXShop, VS Code + LaTeX)</li>
+                        <li><span className="font-semibold">4.</span> Compile the .tex file</li>
+                        <li><span className="font-semibold">5.</span> Get your PDF</li>
+                      </ol>
+                      <p className="text-xs text-gray-600 italic">Full control, no account needed</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 <div className="mt-6">
-                    <h4 className="text-md font-semibold text-gray-700 mb-2">Raw LaTeX Content:</h4>
-                    <p className="text-xs text-gray-500 mb-1">This is the raw LaTeX code generated. Useful for debugging or manual compilation if needed.</p>
-                    <pre className="bg-gray-100 p-3 rounded-md text-xs overflow-x-auto max-h-60 border border-gray-200">
-                        {generatedResumeData.latex_content || "No LaTeX content available."}
-                    </pre>
+                  <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                    <FileText className="h-5 w-5 mr-2" />
+                    LaTeX Content
+                  </h4>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={handleCopyLatex}
+                      className="flex items-center gap-2"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Copied to Clipboard!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          Copy LaTeX
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleDownloadTex}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download .tex
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Generated on: {new Date(generatedResumeData.created_at).toLocaleString()}
+                  </p>
+                  <pre className="bg-gray-900 text-gray-100 p-4 rounded-md text-xs overflow-x-auto max-h-96 border border-gray-700 font-mono">
+                    {generatedResumeData?.latex_content || "No LaTeX content available."}
+                  </pre>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-gray-700">
+                  <p className="font-semibold mb-1">💡 Pro Tips:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>You can edit the LaTeX before compiling to customize your resume</li>
+                    <li>Save your .tex file to make changes later</li>
+                    <li>Generate multiple resumes for different job positions</li>
+                  </ul>
                 </div>
               </div>
             )}

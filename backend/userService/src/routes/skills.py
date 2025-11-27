@@ -4,13 +4,12 @@ from typing import List, Annotated
 
 from src.utils import db
 from src.models import skills as skill_model
-# from src.models import profiles as profile_model # Not directly needed if profile_id comes from path
+
 from src.schemas import skills as skill_schema
 from src.routes.auth import get_current_user
 from src.models.users import User
 from src.utils.auth_helpers import verify_profile_ownership #, get_user_profile_ids_subquery # get_user_profile_ids_subquery may not be needed for these routes
 
-# Reusable dependency annotations
 DbSession = Annotated[Session, Depends(db.get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
@@ -27,7 +26,7 @@ async def create_skill_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create a new skill for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     skill_data = skill_in.dict()
@@ -46,7 +45,7 @@ async def read_skills_for_profile(
     skip: int = 0, 
     limit: int = 100
 ):
-    """Get all skills for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     skills = db_session.query(skill_model.Skill).filter(
@@ -61,7 +60,7 @@ async def read_skill_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Get a specific skill by ID, for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_skill = db_session.query(skill_model.Skill).filter(
@@ -80,7 +79,7 @@ async def update_skill_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Update a skill for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_skill = db_session.query(skill_model.Skill).filter(
@@ -106,7 +105,7 @@ async def delete_skill_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Delete a skill for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_skill = db_session.query(skill_model.Skill).filter(
@@ -128,7 +127,7 @@ async def create_bulk_skills_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create multiple skills at once for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_skills = []

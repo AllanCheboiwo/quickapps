@@ -4,13 +4,12 @@ from typing import List, Annotated
 
 from src.utils import db
 from src.models import experience as experience_model
-# from src.models import profiles as profile_model # Not directly needed
+
 from src.schemas import experience as experience_schema
 from src.routes.auth import get_current_user
 from src.models.users import User
 from src.utils.auth_helpers import verify_profile_ownership#, get_user_profile_ids_subquery # get_user_profile_ids_subquery likely not needed here
 
-# Reusable dependency annotations
 DbSession = Annotated[Session, Depends(db.get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
@@ -27,7 +26,7 @@ async def create_experience_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create a new experience entry for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     experience_data = experience_in.dict()
@@ -46,7 +45,7 @@ async def read_experiences_for_profile(
     skip: int = 0,
     limit: int = 100
 ):
-    """Get all experience entries for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     experiences = db_session.query(experience_model.Experience).filter(
@@ -61,7 +60,7 @@ async def read_experience_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Get a specific experience by ID, for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_experience = db_session.query(experience_model.Experience).filter(
@@ -80,7 +79,7 @@ async def update_experience_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Update an experience for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_experience = db_session.query(experience_model.Experience).filter(
@@ -106,7 +105,7 @@ async def delete_experience_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Delete an experience for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_experience = db_session.query(experience_model.Experience).filter(
@@ -128,7 +127,7 @@ async def create_bulk_experiences_for_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
-    """Create multiple experiences at once for a specific profile owned by the user."""
+
     verify_profile_ownership(profile_id, current_user, db_session)
     
     db_experiences = []

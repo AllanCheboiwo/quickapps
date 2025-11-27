@@ -21,7 +21,7 @@ class LLMClient:
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
         self.model = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
-        self.max_tokens = int(os.getenv("MAX_TOKENS", "3000")) # Increased for potentially more verbose text
+        self.max_tokens = int(os.getenv("MAX_TOKENS", "800")) 
         self.temperature = float(os.getenv("TEMPERATURE", "0.7"))
         self._client = None
     
@@ -346,24 +346,20 @@ GUIDELINES FOR EACH SECTION'S TEXTUAL CONTENT:
                 total_tokens = response.usage.total_tokens
             
             log_entry = LLMRequest(
-                user_id=user_id, prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens, total_tokens=total_tokens,
-                model_used=self.model, response_time_ms=response_time_ms,
-                status=status, error_message=error_message
+                user_id=user_id,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=total_tokens,
+                model_used=self.model,
+                response_time_ms=response_time_ms,
+                status=status
             )
             db.add(log_entry)
             db.commit()
             token_info = total_tokens if total_tokens is not None else 'N/A'
             logger.info(f"LLM request logged for user {user_id}. Status: {status}. Tokens: {token_info}")
         except Exception as e:
-            # Ensure that the original exception (if any) from the LLM call isn't masked by a logging failure.
-            logger.error(f"CRITICAL: Failed to log LLM request for user {user_id} after status {status}. Error: {e}")
-            # Avoid re-raising here if db.commit() fails, as we might be in an exception handler already.
-            # Rollback is important if commit failed.
-            try:
-                db.rollback()
-            except Exception as rb_exc:
-                logger.error(f"Failed to rollback after logging error for user {user_id}: {rb_exc}")
+            logger.error(f"Failed to log LLM request for user {user_id}: {e}")
 
 
 # Example usage (for testing purposes, not part of the class)

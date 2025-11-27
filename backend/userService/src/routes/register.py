@@ -11,7 +11,6 @@ class UserUpdate(BaseModel):
     firstName: Optional[str] = None
     lastName: Optional[str] = None
 
-
 class UserOut(BaseModel):
     id: int
     username: str

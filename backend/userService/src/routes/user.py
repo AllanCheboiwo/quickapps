@@ -8,7 +8,6 @@ from src.schemas import users as user_schema # Pydantic schemas
 from src.routes.auth import get_current_user
 from src.models.users import User
 
-# Reusable dependency annotations
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(
@@ -19,5 +18,5 @@ router = APIRouter(
 
 @router.get("/me", response_model=user_schema.UserOut)
 def read_current_user(current_user: CurrentUser):
-    """Get the current authenticated user's profile"""
+
     return current_user

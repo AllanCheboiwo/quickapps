@@ -9,26 +9,30 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from src.utils.db import get_db
-from src.models.users import User 
-from src.utils.security import verifyPassword, createAccessToken, hashedPassword, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from src.models.users import User
+from src.utils.security import verify_password, get_password_hash, create_access_token
+from src.core.config import settings
 
-# Reusable dependency annotations
 DbSession = Annotated[Session, Depends(get_db)]
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: str | None = None
+
 
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
-    password: str  
+    password: str
     firstName: Optional[str] = None
     lastName: Optional[str] = None
+
 
 class UserOut(BaseModel):
     id: int
@@ -40,7 +44,8 @@ class UserOut(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attributes = True  
+        from_attributes = True
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -50,17 +55,20 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 def get_user(db: Session, username: str):
     user = db.query(User).filter(User.username == username).first()
     return user
+
 
 def authenticate_user(db: Session, username: str, password: str):
     user = get_user(db, username)
     if not user:
         return False
-    if not verifyPassword(password, user.hashedPassword):
+    if not verify_password(password, user.hashedPassword):
         return False
     return user
+
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DbSession):
     credentials_exception = HTTPException(
@@ -69,7 +77,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Db
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -81,21 +89,18 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Db
         raise credentials_exception
     return user
 
+
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: DbSession):
-    """Register a new user"""
-    # Check if email already exists
     db_user_by_email = db.query(User).filter(User.email == user.email).first()
     if db_user_by_email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-    
-    # Check if username already exists
+
     db_user_by_username = db.query(User).filter(User.username == user.username).first()
     if db_user_by_username:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
 
-    # Hash the password and create new user
-    hashed_password = hashedPassword(user.password)
+    hashed_password = get_password_hash(user.password)
     new_user = User(
         username=user.username,
         email=user.email,
@@ -108,12 +113,12 @@ def register_user(user: UserCreate, db: DbSession):
     db.refresh(new_user)
     return new_user
 
+
 @router.post("/token")
 async def login_for_access_token(
     form_data: OAuth2Form,
     db_session: DbSession
 ) -> Token:
-    """Login and get access token"""
     user = authenticate_user(db_session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -121,15 +126,15 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = createAccessToken(
-        data={"sub": user.username}, expiresDelta=access_token_expires
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
+
 
 @router.get("/me", response_model=UserOut)
 async def get_current_user_profile(
     current_user: Annotated[User, Depends(get_current_user)]
 ):
-    """Get the current authenticated user's profile"""
     return current_user

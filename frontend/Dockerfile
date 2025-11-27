@@ -1,26 +1,37 @@
-# Use a Node.js base image
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package files first for better caching
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm install
 
-# Copy the rest of the frontend code
+RUN npm install && npm cache clean --force
+
+
 COPY . .
 
-# Set environment variable to indicate we're in Docker
-ENV DOCKER_ENV=true
-
-# Build the Next.js application
 RUN npm run build
 
-# Expose the port for the Next.js server
+
+FROM node:18-alpine as runtime
+
+WORKDIR /app
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package.json ./package.json
+
+
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps --only=production && npm cache clean --force
+
+
+RUN addgroup -g 1001 appuser && adduser -D -u 1001 -G appuser appuser
+USER appuser
+
 EXPOSE 3000
 
-# Command to run the Next.js production server
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:3000 || exit 1
+
 CMD ["npm", "start"]
