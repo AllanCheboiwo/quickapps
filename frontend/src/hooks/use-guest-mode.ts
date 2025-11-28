@@ -11,15 +11,11 @@ export const useGuestMode = () => {
 
   const startGuestMode = async () => {
     try {
-      // 1. Call guest login endpoint through API client (handles CORS)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      
-      const response = await fetch(`${apiUrl}/auth/guest-login`, {
+      const response = await fetch('/api/auth/guest-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for CORS
       });
 
       if (!response.ok) {

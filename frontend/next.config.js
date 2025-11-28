@@ -7,10 +7,7 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   async rewrites() {
-    // When running in Docker, use service name; when running locally, use localhost
-    const backendUrl = process.env.DOCKER_ENV === 'true' 
-      ? 'http://backend_user:8000'
-      : 'http://localhost:8000';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
       
     return [
       {

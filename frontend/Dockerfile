@@ -2,11 +2,15 @@ FROM node:18-alpine as builder
 
 WORKDIR /app
 
+ARG BACKEND_URL=http://backend_user:8000
+
 COPY package.json package-lock.json ./
 
 RUN npm install && npm cache clean --force
 
 COPY . .
+
+ENV NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL
 
 # Build Next.js app
 RUN npm run build
