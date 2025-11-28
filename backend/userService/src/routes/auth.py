@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 from typing import Annotated, Optional
+import uuid
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,6 +12,7 @@ from sqlalchemy.orm import Session
 from src.utils.db import get_db
 from src.models.users import User
 from src.utils.security import verify_password, get_password_hash, create_access_token
+from src.utils.guest_limiter import GuestLimiter
 from src.core.config import settings
 
 DbSession = Annotated[Session, Depends(get_db)]
@@ -130,6 +132,43 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+    return Token(access_token=access_token, token_type="bearer")
+
+
+@router.post("/guest-login")
+async def guest_login(db: DbSession) -> Token:
+    """
+    Create a temporary guest account with 7-day expiry.
+    No authentication required - perfect for trying the app!
+    
+    Returns a JWT token for immediate access.
+    Guest users can create 1 profile and generate 1 resume per day.
+    """
+    # Generate unique guest username
+    guest_username = f"guest_{uuid.uuid4().hex[:8]}"
+    guest_email = f"{guest_username}@guest.quickapps.local"
+    
+    # Create guest user
+    guest_user = User(
+        username=guest_username,
+        email=guest_email,
+        hashedPassword=get_password_hash("guest"),  # Dummy password
+        firstName="Guest",
+        lastName="User",
+        is_guest=True,
+        guest_expires_at=datetime.utcnow() + timedelta(days=GuestLimiter.GUEST_EXPIRY_DAYS)
+    )
+    
+    db.add(guest_user)
+    db.commit()
+    db.refresh(guest_user)
+    
+    # Create access token
+    access_token = create_access_token(
+        data={"sub": guest_user.username},
+        expires_delta=timedelta(days=GuestLimiter.GUEST_EXPIRY_DAYS)
+    )
+    
     return Token(access_token=access_token, token_type="bearer")
 
 
