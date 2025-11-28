@@ -9,13 +9,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    restart: unless-stopped
 
   backend_user:
     platform: linux/amd64
@@ -26,8 +27,6 @@ services:
     container_name: user_service
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend/userService:/app
     environment:
       # Database
       DB_USER: ${DB_USER}
@@ -49,9 +48,9 @@ services:
       
       # Application
       DEBUG: ${DEBUG:-false}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      DOMAIN: ${DOMAIN:-localhost}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DOMAIN: ${DOMAIN}
+      CORS_ORIGINS: ${CORS_ORIGINS}
       
       # Database Pool
       SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-false}
@@ -66,6 +65,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -81,6 +81,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   frontend:
     build:
@@ -90,16 +91,12 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     depends_on:
       - backend_user
-    environment:
-      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-true}
-      NODE_ENV: ${NODE_ENV:-development}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    restart: unless-stopped
 
 volumes:
   pgdata:
