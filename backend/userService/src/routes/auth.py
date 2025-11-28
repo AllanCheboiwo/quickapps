@@ -146,7 +146,7 @@ async def guest_login(db: DbSession) -> Token:
     """
     # Generate unique guest username
     guest_username = f"guest_{uuid.uuid4().hex[:8]}"
-    guest_email = f"{guest_username}@guest.quickapps.local"
+    guest_email = f"{guest_username}@guest.quickapps.app"
     
     # Create guest user
     guest_user = User(
