@@ -1,15 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useAuth } from './use-auth';
+import { useAuthStore } from '@/stores/auth';
+import Cookies from 'js-cookie';
 
 export const useGuestMode = () => {
   const router = useRouter();
-  const { setToken, setUser } = useAuth();
+  const { setUser } = useAuthStore();
 
   const startGuestMode = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
+      // 1. Call guest login endpoint
       const response = await fetch(`${apiUrl}/auth/guest-login`, {
         method: 'POST',
         headers: {
@@ -24,26 +27,30 @@ export const useGuestMode = () => {
       const data = await response.json();
       const { access_token } = data;
 
-      // Save token to localStorage
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('is_guest', 'true');
+      // 2. Save token to cookies (same as regular login)
+      Cookies.set('access_token', access_token, {
+        secure: true,
+        sameSite: 'Strict',
+        path: '/',
+      });
 
-      // Update auth store
-      setToken(access_token);
-
-      // Fetch user profile
+      // 3. Fetch user profile
       const userResponse = await fetch(`${apiUrl}/auth/me`, {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
       });
 
-      if (userResponse.ok) {
-        const user = await userResponse.json();
-        setUser(user);
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user profile');
       }
 
-      // Redirect to dashboard
+      const user = await userResponse.json();
+
+      // 4. Update auth store
+      setUser(user);
+
+      // 5. Redirect to dashboard
       router.push('/dashboard');
     } catch (error) {
       console.error('Guest login failed:', error);
