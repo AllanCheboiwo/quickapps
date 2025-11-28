@@ -51,9 +51,6 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                Watch Demo
-              </Button>
             </div>
             <p className="text-gray-500 text-sm">
               Join 10,000+ professionals who landed their dream jobs
