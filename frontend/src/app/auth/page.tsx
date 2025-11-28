@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/lib/api'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Zap } from 'lucide-react'
+import { useGuestMode } from '@/hooks/use-guest-mode'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -39,6 +40,7 @@ export default function AuthPage() {
   const [error, setError] = useState('')
   const router = useRouter()
   const { login } = useAuthStore()
+  const { startGuestMode } = useGuestMode()
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -332,7 +334,22 @@ export default function AuthPage() {
               </form>
             )}
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <button
+                onClick={startGuestMode}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors disabled:opacity-50"
+              >
+                <Zap className="w-4 h-4" />
+                {isLoading ? 'Starting guest mode...' : '✨ Try as Guest (7 days)'}
+              </button>
+              
+              <p className="text-xs text-gray-500 text-center mt-3">
+                1 profile • 1 resume/day • No credit card required
+              </p>
+            </div>
+
+            <div className="mt-4 text-center">
               <p className="text-sm text-gray-500">
                 No spam, we respect your privacy
               </p>
