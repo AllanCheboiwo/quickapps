@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useRequireAuth } from '@/hooks/use-auth'
 import { useAuthStore } from '@/stores/auth'
 import { profileApi } from '@/lib/api'
+import { GuestBanner } from '@/components/GuestBanner'
+import { UpgradeCTA } from '@/components/UpgradeCTA'
 import { 
   Plus, 
   FileText, 
@@ -54,7 +56,7 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold text-primary-900">QuickApps</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user?.email}</span>
+              <span className="text-gray-700">Welcome, {user?.username}</span>
               <Button variant="outline" size="sm" onClick={() => {}}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -69,6 +71,9 @@ export default function DashboardPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Guest Banner */}
+        <GuestBanner isGuest={user?.is_guest || false} daysRemaining={7} />
+
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -171,6 +176,13 @@ export default function DashboardPage() {
                 </Card>
               </Link>
             </div>
+          </div>
+        )}
+
+        {/* Upgrade CTA for guests */}
+        {user?.is_guest && (
+          <div className="mt-12">
+            <UpgradeCTA />
           </div>
         )}
       </div>

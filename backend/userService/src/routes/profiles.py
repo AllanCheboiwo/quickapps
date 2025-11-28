@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List, Annotated
 
 from src.utils import db
+from src.utils.guest_limiter import GuestLimiter
 from src.models import profiles as profile_model
 from src.schemas import profiles as profile_schema
 from src.routes.auth import get_current_user
@@ -23,6 +24,14 @@ def create_profile(
     db_session: DbSession,
     current_user: CurrentUser
 ):
+    # Check guest limits
+    can_create, message = GuestLimiter.can_create_profile(current_user, db_session)
+    if not can_create:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=message
+        )
+    
     profile_data = profile.dict()
     profile_data["user_id"] = current_user.id
     db_profile = profile_model.Profile(**profile_data)

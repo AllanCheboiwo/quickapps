@@ -5,6 +5,7 @@ from src.utils.db import get_db
 from src.routes.auth import get_current_user
 from src.utils.auth_helpers import verify_profile_ownership, verify_resume_ownership
 from src.utils.rate_limiter import ResumeRateLimiter
+from src.utils.guest_limiter import GuestLimiter
 from src.models.users import User
 from src.schemas.resumes import ResumeGenerateRequest, ResumeResponse, ResumeListResponse
 from src.services.resume_service import ResumeService
@@ -37,9 +38,17 @@ async def generate_resume(
     Users can copy the LaTeX and compile to PDF using Overleaf or local LaTeX editor.
     
     Rate limited to 5 resumes per hour per user to prevent token waste.
+    Guest users limited to 1 resume per day.
     """
     try:
-    
+        # Check guest limits first
+        can_generate, message = GuestLimiter.can_generate_resume(current_user, db)
+        if not can_generate:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=message
+            )
+        
         ResumeRateLimiter.check_rate_limit(current_user.id, db)
         
         

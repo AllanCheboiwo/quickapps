@@ -16,6 +16,10 @@ class User(Base):
     lastName:Mapped[str] = mapped_column()
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate = func.now(),nullable=False)
+    
+    # Guest mode fields
+    is_guest: Mapped[bool] = mapped_column(default=False, nullable=False)
+    guest_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     #relationships
     profiles: Mapped[List["Profile"]] = relationship(back_populates="user")
