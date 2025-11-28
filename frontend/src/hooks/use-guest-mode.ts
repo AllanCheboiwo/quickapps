@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth';
+import { authApi } from '@/lib/api';
 import Cookies from 'js-cookie';
 
 export const useGuestMode = () => {
@@ -10,14 +11,15 @@ export const useGuestMode = () => {
 
   const startGuestMode = async () => {
     try {
+      // 1. Call guest login endpoint through API client (handles CORS)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
-      // 1. Call guest login endpoint
       const response = await fetch(`${apiUrl}/auth/guest-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Important for CORS
       });
 
       if (!response.ok) {
@@ -29,23 +31,11 @@ export const useGuestMode = () => {
 
       // 2. Save token to cookies (same as regular login)
       Cookies.set('access_token', access_token, {
-        secure: true,
-        sameSite: 'Strict',
         path: '/',
       });
 
-      // 3. Fetch user profile
-      const userResponse = await fetch(`${apiUrl}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      });
-
-      if (!userResponse.ok) {
-        throw new Error('Failed to fetch user profile');
-      }
-
-      const user = await userResponse.json();
+      // 3. Fetch user profile using the auth API
+      const user = await authApi.getCurrentUser();
 
       // 4. Update auth store
       setUser(user);
