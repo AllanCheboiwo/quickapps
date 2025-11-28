@@ -1,7 +1,7 @@
 """
 Guest mode rate limiter and utility functions
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from src.models.users import User
@@ -22,7 +22,7 @@ class GuestLimiter:
             return False
         if user.guest_expires_at is None:
             return True
-        return datetime.utcnow() > user.guest_expires_at
+        return datetime.now(timezone.utc) > user.guest_expires_at
     
     @staticmethod
     def can_generate_resume(user: User, db: Session) -> tuple[bool, str]:
