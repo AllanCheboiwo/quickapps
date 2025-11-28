@@ -8,6 +8,8 @@ export interface User {
   is_active: boolean
   created_at: string
   updated_at: string
+  is_guest?: boolean
+  guest_expires_at?: string | null
 }
 
 export interface UserCreate {
