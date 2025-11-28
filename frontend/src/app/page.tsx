@@ -206,10 +206,10 @@ export default function LandingPage() {
             <p className="text-gray-400 mb-6">
               AI-powered resume builder for the modern job seeker
             </p>
-            <div className="flex justify-center space-x-6 text-gray-400">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <div className="text-gray-400">
+              <a href="mailto:kiplongeiallan@gmail.com" className="hover:text-white transition-colors">
+                kiplongeiallan@gmail.com
+              </a>
             </div>
           </div>
         </div>

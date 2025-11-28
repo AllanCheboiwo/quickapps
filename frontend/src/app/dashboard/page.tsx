@@ -56,7 +56,7 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold text-primary-900">QuickApps</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user?.email}</span>
+              <span className="text-gray-700">Welcome, {user?.username}</span>
               <Button variant="outline" size="sm" onClick={() => {}}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
